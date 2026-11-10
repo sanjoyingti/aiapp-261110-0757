@@ -335,13 +335,17 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- Sign in with GitHub (Device Flow + OAuth Redirect URI capture) ----
 
-    var githubUser by mutableStateOf<String>(keys.getExtra("GITHUB_USER") ?: "")
+    var githubUser by mutableStateOf<String>("")
         private set
     var githubCode by mutableStateOf<GitHubLogin.DeviceCode?>(null)
         private set
     var githubLoginError by mutableStateOf<String?>(null)
         private set
     private var loginJob: Job? = null
+
+    init {
+        githubUser = keys.getExtra("GITHUB_USER") ?: ""
+    }
 
     fun githubClientId(): String = keys.getExtra("GITHUB_CLIENT_ID").ifBlank { GitHubLogin.DEFAULT_CLIENT_ID }
 
