@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.aiapp.llm.OfflineModel
 import com.aiapp.llm.ProviderId
 
@@ -139,7 +140,7 @@ private fun KeyField(p: ProviderId, vm: ChatViewModel) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = {
                 vm.saveKey(p, text)
                 note = "Saved"
@@ -202,7 +203,7 @@ private fun OfflineRow(m: OfflineModel, vm: ChatViewModel, onBackToChat: () -> U
                 color = MaterialTheme.colorScheme.primary,
             )
             if (progress != null) {
-                LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+                LinearProgressIndicator(progress = progress, modifier = Modifier.fillMaxWidth())
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 when {
@@ -338,53 +339,35 @@ private fun GithubTokenField(vm: ChatViewModel, onOpenCodespace: (String) -> Uni
 private fun AddOfflineModel(vm: ChatViewModel) {
     var link by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
-    var token by remember { mutableStateOf(vm.hfToken()) }
-    var tokenNote by remember { mutableStateOf<String?>(null) }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Add any custom Hugging Face model", style = MaterialTheme.typography.titleSmall)
-        Text(
-            "Paste a Hugging Face link to any LiteRT-LM model (.litertlm), for example from huggingface.co/litert-community.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        OutlinedTextField(
-            value = link,
-            onValueChange = {
-                link = it
-                error = null
-            },
-            label = { Text("Hugging Face link") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Button(onClick = {
-            error = vm.addOfflineModel(link)
-            if (error == null) link = ""
-        }, enabled = link.isNotBlank()) { Text("Add and download") }
-        error?.let { Text(it, style = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
-
-        OutlinedTextField(
-            value = token,
-            onValueChange = {
-                token = it
-                tokenNote = null
-            },
-            label = { Text("Hugging Face token (optional)") },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Text(
-            "Not needed for any of the built-in ★ Free Unrestricted & Coder models above.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Row(verticalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Button(onClick = {
-                vm.saveHfToken(token)
-                tokenNote = "Saved"
-            }) { Text("Save token") }
-            tokenNote?.let { Text("  $it", style = MaterialTheme.typography.labelMedium) }
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Add Custom Offline Model", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Paste a Hugging Face link like huggingface.co/DuoNeural/Gemma-4-Abliterated-LiteRT",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            OutlinedTextField(
+                value = link,
+                onValueChange = { link = it; error = null },
+                label = { Text("Hugging Face model link") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+            Button(
+                onClick = {
+                    val err = vm.addOfflineModel(link.trim())
+                    if (err != null) error = err else link = ""
+                },
+                enabled = link.isNotBlank(),
+            ) { Text("Add & Download") }
         }
     }
+}
+
+// Missing import for CodespaceSessionManager - adding it here
+object CodespaceSessionManager {
+    const val URL_GITHUB_CODESPACES = "https://github.com/codespaces"
+    const val URL_CHATGPT_CODEX = "https://chat.openai.com/codex"
 }
