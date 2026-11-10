@@ -42,6 +42,11 @@ import java.util.UUID
 class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     private val keys = ApiKeys(app)
+    private val prefs = app.getSharedPreferences("chat_prefs", Context.MODE_PRIVATE)
+
+    /** GitHub username (cached from the last successful sign-in). */
+    var githubUser by mutableStateOf<String>(keys.getExtra("GITHUB_USER") ?: "")
+        private set
 
     init {
         Providers.init(app)
@@ -49,7 +54,6 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         WebTools.downloader = { url -> Downloads.save(app, url) }
         Providers.offline.hfToken = keys.getExtra("HF")
     }
-    private val prefs = app.getSharedPreferences("chat_prefs", Context.MODE_PRIVATE)
 
     val messages = mutableStateListOf<ChatMessage>()
 
@@ -335,17 +339,11 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- Sign in with GitHub (Device Flow + OAuth Redirect URI capture) ----
 
-    var githubUser by mutableStateOf<String>("")
-        private set
     var githubCode by mutableStateOf<GitHubLogin.DeviceCode?>(null)
         private set
     var githubLoginError by mutableStateOf<String?>(null)
         private set
     private var loginJob: Job? = null
-
-    init {
-        githubUser = keys.getExtra("GITHUB_USER") ?: ""
-    }
 
     fun githubClientId(): String = keys.getExtra("GITHUB_CLIENT_ID").ifBlank { GitHubLogin.DEFAULT_CLIENT_ID }
 
