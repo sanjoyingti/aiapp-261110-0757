@@ -341,9 +341,10 @@ private fun AddOfflineModel(vm: ChatViewModel) {
     var error by remember { mutableStateOf<String?>(null) }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Add Custom Offline Model", style = MaterialTheme.typography.titleMedium)
+            Text("Add Custom Offline Model (Hugging Face)", style = MaterialTheme.typography.titleMedium)
             Text(
-                "Paste a Hugging Face link like huggingface.co/DuoNeural/Gemma-4-Abliterated-LiteRT",
+                "Paste a model link from huggingface.co (e.g., huggingface.co/DuoNeural/Gemma-4-Abliterated-LiteRT). " +
+                    "The app will download the quantized LiteRT/TFLite model.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -353,21 +354,17 @@ private fun AddOfflineModel(vm: ChatViewModel) {
                 label = { Text("Hugging Face model link") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
+                isError = error != null,
             )
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
-            Button(
-                onClick = {
-                    val err = vm.addOfflineModel(link.trim())
+            error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
+            Button(onClick = {
+                vm.addOfflineModel(link.trim()).also { err ->
                     if (err != null) error = err else link = ""
-                },
-                enabled = link.isNotBlank(),
-            ) { Text("Add & Download") }
+                }
+            }, enabled = link.trim().isNotBlank()) { Text("Add & Download") }
         }
     }
 }
 
-// Missing import for CodespaceSessionManager - adding it here
-object CodespaceSessionManager {
-    const val URL_GITHUB_CODESPACES = "https://github.com/codespaces"
-    const val URL_CHATGPT_CODEX = "https://chat.openai.com/codex"
-}
+// CodespaceSessionManager is defined in CodespaceScreen.kt to avoid redeclaration
+// This file uses the constants from there
